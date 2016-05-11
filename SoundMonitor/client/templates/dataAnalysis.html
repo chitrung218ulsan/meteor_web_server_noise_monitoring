@@ -1,0 +1,269 @@
+
+<template name="dataAnalysis">
+    <div class="container-full">
+        <div class="row">
+            <div class="col-md-2 form-group">
+                <label for="viewMode">View Mode:</label>
+                <select class="form-control" id="viewMode">
+                    <option value="data" selected>Data Mode</option>
+                    <option value="graph" >Graph Mode</option>
+					<option value="epicenter" >Epicenter Mode</option>
+                </select>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="apartment-selection-dashboard">Select an apartment</label>
+                <select class="form-control" id="apartment-selection-dashboard">
+                    <option value="0" selected></option>
+                    {{ #each apartments }}
+                    <option value="{{_id}}">{{ name }}</option>
+                    {{ /each }}
+                </select>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="startDateInput">Select start date:</label>
+                <div class='input-group date' id='startDatePicker'>
+                    <input type='text' class="form-control" id="startDateInput" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="endDateInput">Select end date:</label>
+                <div class='input-group date' id='endDatePicker'>
+                    <input type='text' class="form-control" id="endDateInput"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="thresholdSoundPicker">Sound threshold: </label>
+                <input type='text' class="form-control" id='thresholdSoundPicker' value=''/>
+            </div>
+            <div class="col-md-2 form-group">
+                <label for="thresholdVibrationPicker">Vibration threshold: </label>
+                <input type='text' class="form-control" id='thresholdVibrationPicker' value=''/>
+            </div>
+        </div>
+    </div>
+    <div class="container-full">
+        <div class="row">
+            <div class="col-md-2" style="background-color: antiquewhite">
+                <div class="row">
+                    <div><strong>Buildings: </strong></div>
+                    <div class="list-group" id="building-list">
+                        {{# each buildings}}
+                            <button type="button" class="list-group-item" value="{{_id}}">{{name}}</button>
+                        {{/each}}
+                    </div>
+                </div>
+                {{#if isGraphMode}}
+					<div class="row">
+						<div><strong>Homes: </strong></div>
+						<div class="list-group" id="graph-home-list">
+							{{# each homes_1}}
+								
+								{{> dataHome home=this masterTemplate=masterTemplate}}
+							{{/each}}
+						</div>
+					</div>
+                {{/if}}
+            </div>
+            {{#if isGraphMode}}
+			  
+					<div class="col-md-10">
+						
+							{{# each selectedHomes}}
+								{{> chartHome home=this masterTemplate=masterTemplate }}
+							{{/each}}
+						
+					</div>
+			  
+            {{else}}
+				{{#if isEpicenterMode}}
+					<div class="col-md-10">
+						<div class="row">
+							
+									{{#each floors}} 
+										 
+										{{> dataHome floor=this masterTemplate=masterTemplate}}
+												
+										
+									{{/each}}
+						
+						</div>
+					</div>
+				{{else}}
+					<div class="col-md-10">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-bordered" >
+                                {{ #with buildingMaxInfo_1 }}
+                                <tbody>
+                                <tr>
+                                    <th>Max of Sound</th>
+                                    <td >{{maxSound}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Over Sound Threshold</th>
+                                    <td >{{overThresholdSound}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Max of Vibration</th>
+                                    <td>{{maxVib}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Over Vibration Threshold</th>
+                                    <td>{{overThresholdVib}}</td>
+                                </tr>
+                                </tbody>
+                                {{ /with}}
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+						
+								{{#each floors}} 
+									 
+									{{> dataHome floor=this masterTemplate=masterTemplate}}
+									
+								{{/each}}
+					
+                    </div>
+                </div>
+				{{/if}}
+                
+            {{/if}}
+
+        </div>
+    </div>
+
+</template>
+
+<template name="showSelectedHome">
+	<div class="homeCell list-group-item" id="{{_id }}">
+		{{homeNumber}}
+	</div>
+</template>
+
+<template name="dataHome">
+	
+		
+			{{#if isGraphMode}}
+				<div class="homeCell list-group-item" id="{{ home._id }}">
+					{{home.homeNumber}}
+				</div>
+			{{else}}
+		
+			
+				<div class="HomeList">  
+					<ul class="list-inline">
+						
+							{{#each listHomeNumber floor.floorNumber masterTemplate}} 
+								
+								<li class="box_dataAnalysis">
+									<div class="row">
+										<div class="col-md-12">
+											<h2 style="color:red" align="center">{{this.homeNumber}}</h2>
+										</div>
+									</div>
+									
+										{{#with homeInfo this.homeNumber this.template}}
+										
+											{{#with getResult this.home this.template }}
+												<!-- {{#if this.status}}
+													<div class="homeCell list-group-item list-dataAnalysis active" id="{{this._id }}">
+												{{else}}
+													<div class="homeCell list-group-item list-dataAnalysis" id="{{this._id }}">
+												{{/if}} -->
+												
+												{{#if this.status}}
+												<div class="homeCell list-group-item list-dataAnalysis active" id="{{this.home._id }}">
+													<table class="table table-bordered">
+														<tbody>
+															{{ #with maxSoundInfo_1 this.home}}
+															<tr>
+																<th>Max of Sound</th>
+																<td >{{maxSound}}</td>
+															</tr>
+
+															<tr>
+																<th>Over Sound Threshold</th>
+																<td >{{numOfSoundOverThreshold}}</td>
+															</tr>
+															
+															{{/with}}
+															{{ #with maxVibrationInfo_1 this.home }}
+															<tr>
+																<th>Max of Vibration</th>
+																<td>{{maxVib}}</td>
+															</tr>
+															<tr>
+																<th>Over Vibration Threshold</th>
+																<td>{{numOfVibOverThreshold}}</td>
+															</tr>
+															{{/with}}
+														</tbody>
+													</table>
+										
+													</div>
+												{{else}}
+												
+													<div class="homeCell list-group-item list-dataAnalysis" id="{{this.home._id }}">
+													<table class="table table-bordered">
+														<tbody>
+															{{ #with maxSoundInfo_1 this.home}}
+															<tr>
+																<th>Max of Sound</th>
+																<td >{{maxSound}}</td>
+															</tr>
+
+															<tr>
+																<th>Over Sound Threshold</th>
+																<td >{{numOfSoundOverThreshold}}</td>
+															</tr>
+															
+															{{/with}}
+															{{ #with maxVibrationInfo_1 this.home }}
+															<tr>
+																<th>Max of Vibration</th>
+																<td>{{maxVib}}</td>
+															</tr>
+															<tr>
+																<th>Over Vibration Threshold</th>
+																<td>{{numOfVibOverThreshold}}</td>
+															</tr>
+															{{/with}}
+														</tbody>
+													</table>
+										
+													</div>
+												
+												{{/if}}
+											{{/with}}
+											
+										{{/with}} 
+									
+								</li>	
+							
+							{{/each}}
+							
+					</ul>	
+				</div> 
+			{{/if}}
+
+		
+		
+</template>
+
+<template name="chartHome">
+ <div class="row">
+    <h2 align="center">{{home.homeNumber}}</h2>
+	
+	<div id="{{home._id}}" style=""></div>
+	
+	<!--<button id="export">Export chart</button> -->
+</div >
+</template>
+
